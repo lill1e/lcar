@@ -51,12 +51,6 @@ impl Node {
                     CheckedType::Error(TypeError::UnboundVariable)
                 }
             }
-            // Node::Lambda(sym, body) => match body.type_check_env(env) {
-            //     CheckedType::Type(t) => {
-            //         env.insert(sym, v)
-            //     }
-            //     CheckedType::Error(err) => CheckedType::Error(err),
-            // },
             Node::Application(rator, rand) => {
                 match (rator.type_check_env(env), rand.type_check_env(env)) {
                     (CheckedType::Type(rator_type), CheckedType::Type(rand_type)) => {
