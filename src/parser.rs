@@ -30,18 +30,47 @@ fn consume_type(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Type> {
     }
 }
 
+fn consume_right_paren(tokens: &mut Peekable<IntoIter<Token>>) -> Result<()> {
+    if let Some(Token::RightParen) = tokens.next_if(|tok| matches!(tok, Token::RightParen)) {
+        Ok(())
+    } else {
+        bail!("consume type mismatch")
+    }
+}
+
+fn parse_lambda(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
+    let id = consume_identifier(tokens)?;
+    let t = consume_type(tokens)?;
+    let body = parse_top(tokens)?;
+    consume_right_paren(tokens)?;
+    Ok(Node::Lambda(id, t, Box::new(body)))
+}
+
 fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
-    match tokens.next_if(|tok| matches!(tok, Token::Number(_) | Token::Lambda)) {
-        Some(Token::Number(n)) => Ok(Node::Number(n)),
-        Some(Token::Lambda) => {
-            let id = consume_identifier(tokens);
-            let t = consume_type(tokens);
-            Ok(Node::Lambda(id?, t?, Box::new(parse_top(tokens)?)))
+    if let Some(tok) = tokens.next_if(|tok| {
+        matches!(
+            tok,
+            Token::Number(_) | Token::Identifier(_) | Token::LeftParen
+        )
+    }) {
+        match tok {
+            Token::Number(n) => Ok(Node::Number(n)),
+            Token::Identifier(ident) => Ok(Node::Var(ident)),
+            Token::LeftParen => {
+                let rator = parse_top(tokens)?;
+                let rand = parse_top(tokens)?;
+                if let Some(Token::Lambda) = tokens.next_if(|tok| matches!(tok, Token::Lambda)) {
+                    parse_lambda(tokens)
+                } else if let Some(Token::LeftParen) = tokens.peek() {
+                    parse_literal(tokens)
+                } else {
+                    bail!("expected to apply a lambda")
+                }
+            }
+            _ => unreachable!(),
         }
-        Some(Token::Identifier(ident)) => Ok(Node::Var(ident)),
-        Some(Token::LeftParen | Token::RightParen | Token::TypeAnnotation(_)) | None => {
-            bail!("expected literal")
-        }
+    } else {
+        bail!("expected literal")
     }
 }
 
