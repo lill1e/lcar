@@ -1,5 +1,6 @@
-use crate::parser::Node;
 use std::{collections::HashMap, fmt::Display};
+
+use crate::{lexer::Type, parser::Node};
 
 #[derive(Debug, Clone)]
 pub enum Returnable {
@@ -21,18 +22,24 @@ impl Display for Returnable {
 }
 
 impl Node {
-    // fn interp_env(&self, env: HashMap<String, Returnable>) -> Returnable {
-    //     match self {
-    //         Node::Number(n) => Returnable::Number(*n),
-    //         Node::Lambda(sym, body) => Returnable::Lambda(self.clone()),
-    //         Node::Var(sym) => match env.get(sym) {
-    //             Some(v) => {}
-    //             None => {}
-    //         },
-    //         Node::Lambda(sym, body) => {}
-    //     }
-    // }
-    // fn interp(&self) -> Returnable {
-    //     self.interp_env(HashMap::new())
-    // }
+    fn interp_env(&self, env: &mut HashMap<String, Returnable>) -> Returnable {
+        match self {
+            Node::Number(n) => Returnable::Number(*n),
+            Node::Lambda(sym, ty, body) => {
+                Returnable::Lambda(sym.clone(), ty.clone(), *body.clone())
+            }
+            Node::Var(sym) => env[sym].clone(),
+            Node::Application(rator, rand) => match rator.interp_env(env) {
+                Returnable::Lambda(sym, _, body) => {
+                    let operand = rand.interp_env(env);
+                    env.insert(sym, operand);
+                    body.interp_env(env)
+                }
+                Returnable::Number(_) => unreachable!(),
+            },
+        }
+    }
+    pub fn interp(&self) -> Returnable {
+        self.interp_env(&mut HashMap::new())
+    }
 }
