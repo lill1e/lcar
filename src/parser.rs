@@ -46,9 +46,9 @@ fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
 }
 
 fn parse_top(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
-    Ok(parse_literal(tokens)?)
+    parse_literal(tokens)
 }
 
 pub fn parse(tokens: Vec<Token>) -> Result<Node> {
-    Ok(parse_top(&mut tokens.into_iter().peekable())?)
+    parse_top(&mut tokens.into_iter().peekable())
 }
