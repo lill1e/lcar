@@ -3,8 +3,9 @@ mod lexer;
 mod parser;
 mod type_check;
 
-use anyhow::Result;
 use std::io;
+
+use anyhow::Result;
 
 use crate::{lexer::lex_lc, parser::parse};
 
