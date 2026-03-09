@@ -1,4 +1,4 @@
-use std::{iter::Peekable, str::Chars};
+use std::{fmt::Display, iter::Peekable, str::Chars};
 
 use anyhow::{Result, bail};
 
@@ -18,7 +18,20 @@ pub enum Token {
     RightParen,
 }
 
-pub fn lex_word(iter: &mut Peekable<Chars<'_>>) -> Token {
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Type::Number => String::from("Number"),
+                Type::Function(in_ty, out_ty) => format!("{} -> {}", in_ty, out_ty),
+            }
+        )
+    }
+}
+
+fn lex_word(iter: &mut Peekable<Chars<'_>>) -> Token {
     let mut acc = String::new();
     while let Some(c) = iter.next_if(|&c| c.is_alphanumeric()) {
         acc.push(c);

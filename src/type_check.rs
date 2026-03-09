@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Display};
 
 use crate::{lexer::Type, parser::Node};
 
@@ -15,6 +15,36 @@ pub enum TypeError {
 pub enum CheckedType {
     Type(Type),
     Error(TypeError),
+}
+
+impl Display for TypeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                TypeError::UnboundVariable => String::from("Unbound Variable"),
+                TypeError::Cascade(err) => format!(">{}", err),
+                TypeError::CascadeDouble(err1, err2) => format!("{}<=>{}", err1, err2),
+                TypeError::NonFunctionApplication(ty) =>
+                    format!("Function Application expected a Function, but got {}", ty),
+                TypeError::FunctionInputMismatch => String::from("Operand Type mismatch"),
+            }
+        )
+    }
+}
+
+impl Display for CheckedType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                CheckedType::Type(ty) => format!("{}", ty),
+                CheckedType::Error(err) => format!("{}", err),
+            }
+        )
+    }
 }
 
 impl Node {
