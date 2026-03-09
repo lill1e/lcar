@@ -1,8 +1,7 @@
-mod interpreter;
 mod lexer;
 mod parser;
-mod type_check;
-use std::io;
+
+use std::{collections::HashMap, io, iter::Peekable, str::Chars, vec::IntoIter};
 
 use anyhow::Result;
 
