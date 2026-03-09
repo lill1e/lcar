@@ -3,7 +3,7 @@ use crate::parser::Node;
 #[derive(Debug, Clone)]
 pub enum Returnable {
     Number(i32),
-    Lambda(Node),
+    Lambda(String, Type, Node),
 }
 
 impl Node {
