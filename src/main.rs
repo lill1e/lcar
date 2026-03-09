@@ -5,6 +5,7 @@ mod type_check;
 use std::io;
 
 use crate::{lexer::lex_lc, parser::parse, type_check::CheckedType};
+
 use anyhow::Result;
 
 fn main() -> Result<()> {
