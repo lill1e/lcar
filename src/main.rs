@@ -3,7 +3,7 @@ mod lexer;
 mod parser;
 mod type_check;
 
-use std::{collections::HashMap, io, iter::Peekable, str::Chars, vec::IntoIter};
+use std::io;
 
 use anyhow::Result;
 
