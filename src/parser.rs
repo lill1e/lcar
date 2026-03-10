@@ -57,12 +57,13 @@ fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
             Token::Number(n) => Ok(Node::Number(n)),
             Token::Identifier(ident) => Ok(Node::Var(ident)),
             Token::LeftParen => {
-                let rator = parse_top(tokens)?;
-                let rand = parse_top(tokens)?;
                 if let Some(Token::Lambda) = tokens.next_if(|tok| matches!(tok, Token::Lambda)) {
                     parse_lambda(tokens)
                 } else if let Some(Token::LeftParen) = tokens.peek() {
-                    parse_literal(tokens)
+                    Ok(Node::Application(
+                        Box::new(parse_top(tokens)?),
+                        Box::new(parse_top(tokens)?),
+                    ))
                 } else {
                     bail!("expected to apply a lambda")
                 }
