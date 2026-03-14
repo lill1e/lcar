@@ -24,7 +24,11 @@ fn parse_type(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Type> {
     if let Some(Token::TypeAnnotation(t)) =
         tokens.next_if(|tok| matches!(tok, Token::TypeAnnotation(_)))
     {
-        Ok(t)
+        if let Some(Token::TypeArrow) = tokens.next_if(|tok| matches!(tok, Token::TypeArrow)) {
+            Ok(Type::Function(Box::new(t), Box::new(parse_type(tokens)?)))
+        } else {
+            Ok(t)
+        }
     } else {
         bail!("expected a type")
     }

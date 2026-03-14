@@ -12,6 +12,7 @@ pub enum Type {
 pub enum Token {
     Identifier(String),
     TypeAnnotation(Type),
+    TypeArrow,
     Lambda,
     Number(i32),
     LeftParen,
@@ -87,6 +88,14 @@ pub fn lex_lc(program: String) -> Result<Vec<Token>> {
                     match lex_word(&mut iter) {
                         Token::TypeAnnotation(t) => tokens.push(Token::TypeAnnotation(t)),
                         _ => bail!("expected word"),
+                    }
+                }
+                '-' => {
+                    iter.next();
+                    if let Some('>') = iter.next_if(|ch| matches!(ch, '>')) {
+                        tokens.push(Token::TypeArrow);
+                    } else {
+                        bail!("expected arrow notation")
                     }
                 }
                 _ => {
