@@ -9,6 +9,7 @@ pub enum TypeError {
     CascadeDouble(Box<TypeError>, Box<TypeError>),
     NonFunctionApplication(Type),
     FunctionInputMismatch,
+    BindingTypeMismatch,
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +30,9 @@ impl Display for TypeError {
                 TypeError::NonFunctionApplication(ty) =>
                     format!("Function Application expected a Function, but got {}", ty),
                 TypeError::FunctionInputMismatch => String::from("Operand Type mismatch"),
+                TypeError::BindingTypeMismatch => String::from(
+                    "Right hand size of a Variable Binding does not match the specified type"
+                ),
             }
         )
     }
@@ -95,6 +99,22 @@ impl Node {
                     CheckedType::Error(err) => CheckedType::Error(err),
                 }
             }
+            Node::Let(sym, t, rhs, body) => match rhs.type_check_env(env) {
+                CheckedType::Type(rhs_type) => {
+                    if *t == rhs_type {
+                        env.insert(sym.clone(), t.clone());
+                        match body.type_check_env(env) {
+                            CheckedType::Type(body_type) => CheckedType::Type(body_type),
+                            CheckedType::Error(err) => {
+                                CheckedType::Error(TypeError::Cascade(Box::new(err)))
+                            }
+                        }
+                    } else {
+                        CheckedType::Error(TypeError::BindingTypeMismatch)
+                    }
+                }
+                CheckedType::Error(err) => CheckedType::Error(err),
+            },
         }
     }
     pub fn type_check(&self) -> CheckedType {

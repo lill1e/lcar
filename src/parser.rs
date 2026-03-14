@@ -1,6 +1,6 @@
 use std::{iter::Peekable, vec::IntoIter};
 
-use anyhow::{Result, bail};
+use anyhow::{Ok, Result, bail};
 
 use crate::lexer::{Token, Type};
 
@@ -9,6 +9,7 @@ pub enum Node {
     Number(i32),
     Var(String),
     Lambda(String, Type, Box<Node>),
+    Let(String, Type, Box<Node>, Box<Node>),
     Application(Box<Node>, Box<Node>),
 }
 
@@ -50,6 +51,15 @@ fn parse_lambda(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
     Ok(Node::Lambda(id, t, Box::new(body)))
 }
 
+fn parse_let(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
+    let id = parse_identifier(tokens)?;
+    let t = parse_type(tokens)?;
+    let rhs = parse_top(tokens)?;
+    let body = parse_top(tokens)?;
+    consume_right_paren(tokens)?;
+    Ok(Node::Let(id, t, Box::new(rhs), Box::new(body)))
+}
+
 fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
     if let Some(tok) = tokens.next_if(|tok| {
         matches!(
@@ -61,7 +71,11 @@ fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
             Token::Number(n) => Ok(Node::Number(n)),
             Token::Identifier(ident) => Ok(Node::Var(ident)),
             Token::LeftParen => {
-                if let Some(Token::Lambda) = tokens.next_if(|tok| matches!(tok, Token::Lambda)) {
+                if let Some(Token::Let) = tokens.next_if(|tok| matches!(tok, Token::Let)) {
+                    parse_let(tokens)
+                } else if let Some(Token::Lambda) =
+                    tokens.next_if(|tok| matches!(tok, Token::Lambda))
+                {
                     parse_lambda(tokens)
                 } else if let Some(Token::Identifier(rator)) =
                     tokens.next_if(|tok| matches!(tok, Token::Identifier(_)))

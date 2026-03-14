@@ -37,6 +37,11 @@ impl Node {
                 }
                 Returnable::Number(_) => unreachable!(),
             },
+            Node::Let(sym, _, rhs, body) => {
+                let rhs_v = rhs.interp_env(env);
+                env.insert(sym.to_string(), rhs_v);
+                body.interp_env(env)
+            }
         }
     }
     pub fn interp(&self) -> Returnable {

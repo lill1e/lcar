@@ -14,6 +14,7 @@ pub enum Token {
     TypeAnnotation(Type),
     TypeArrow,
     Lambda,
+    Let,
     Number(i32),
     LeftParen,
     RightParen,
@@ -39,6 +40,7 @@ fn lex_word(iter: &mut Peekable<Chars<'_>>) -> Token {
     }
     match acc.as_str() {
         "lambda" => Token::Lambda,
+        "let" => Token::Let,
         "number" => Token::TypeAnnotation(Type::Number),
         _ => Token::Identifier(acc),
     }
