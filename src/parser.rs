@@ -12,21 +12,21 @@ pub enum Node {
     Application(Box<Node>, Box<Node>),
 }
 
-fn consume_identifier(tokens: &mut Peekable<IntoIter<Token>>) -> Result<String> {
+fn parse_identifier(tokens: &mut Peekable<IntoIter<Token>>) -> Result<String> {
     if let Some(Token::Identifier(id)) = tokens.next_if(|tok| matches!(tok, Token::Identifier(_))) {
         Ok(id)
     } else {
-        bail!("consume type mismatch")
+        bail!("expected an identifier")
     }
 }
 
-fn consume_type(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Type> {
+fn parse_type(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Type> {
     if let Some(Token::TypeAnnotation(t)) =
         tokens.next_if(|tok| matches!(tok, Token::TypeAnnotation(_)))
     {
         Ok(t)
     } else {
-        bail!("consume type mismatch")
+        bail!("expected a type")
     }
 }
 
@@ -39,8 +39,8 @@ fn consume_right_paren(tokens: &mut Peekable<IntoIter<Token>>) -> Result<()> {
 }
 
 fn parse_lambda(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
-    let id = consume_identifier(tokens)?;
-    let t = consume_type(tokens)?;
+    let id = parse_identifier(tokens)?;
+    let t = parse_type(tokens)?;
     let body = parse_top(tokens)?;
     consume_right_paren(tokens)?;
     Ok(Node::Lambda(id, t, Box::new(body)))
