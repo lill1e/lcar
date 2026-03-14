@@ -63,6 +63,15 @@ fn parse_literal(tokens: &mut Peekable<IntoIter<Token>>) -> Result<Node> {
             Token::LeftParen => {
                 if let Some(Token::Lambda) = tokens.next_if(|tok| matches!(tok, Token::Lambda)) {
                     parse_lambda(tokens)
+                } else if let Some(Token::Identifier(rator)) =
+                    tokens.next_if(|tok| matches!(tok, Token::Identifier(_)))
+                {
+                    let rand = parse_top(tokens)?;
+                    consume_right_paren(tokens)?;
+                    Ok(Node::Application(
+                        Box::new(Node::Var(rator)),
+                        Box::new(rand),
+                    ))
                 } else if let Some(Token::LeftParen) = tokens.peek() {
                     Ok(Node::Application(
                         Box::new(parse_top(tokens)?),
